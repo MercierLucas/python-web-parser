@@ -7,19 +7,15 @@ Usage
 
 
 ```python
-# define all
-outer_element = scrapper.Element("product-thumbnail",property="class",tag="article")
+outer_element = scrapper.Element("zg-item-immersion",property="class",tag="li")
 
 inner_elements = [
-    scrapper.Element("product-thumbnail__description",property="class",tag="p"),
-    scrapper.Element("GROCERY",property="data-seller-type",tag="span"),
-    scrapper.Element("product-price",property="class",tag="div")
+    scrapper.Element("p13n-sc-truncate-desktop-type2",property="class",tag="div"),
+    scrapper.Element("p13n-sc-price",property="class",tag="span"),
 ]
-headers = ["Product","Price","Size"]
+headers = ["Product","Price"]
 
-auchan_fetes = "https://www.auchan.fr/joyeuses-fetes/plats-accompagnements-fromages/poissons-crustaces/ca-b202011041112?page=1"
-auchan_viande = "https://www.auchan.fr/boucherie-volaille-poissonnerie/ca-n02?page=1"
-auchan_scrap = scrapper.Scrapper(
+amazon = scrapper.Scrapper(
     outer_element,
     headers,
     inner_elements
