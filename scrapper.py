@@ -53,16 +53,29 @@ class Scrapper:
             driver.execute_script(f"window.scrollTo(0, {i*step})")
             time.sleep(wait)
             
-    def parse_and_get(self,url,category,add_scroll=False):
-        response = self.get_page(url,add_scroll=add_scroll)
-        return self.scrap(response,category)
+
+    def parse_multiple(self,urls):
+        df = []
+        n = len(urls)
+        for i in range(n):
+            print(f"Parsing page [{(i+1)}/{n}]")
+            response = self.get_page(urls[i],scroller=None)
+            df.append(self.scrap(response))
+
+        df = pd.concat(df)
+        print(f"Parse finished. Found {df.shape[0]} products")
+        return df
+
+    def parse_and_get(self,url,scroller=None):
+        response = self.get_page(url,scroller=scroller)
+        return self.scrap(response)
         
-    def scrap(self,response,category):
+    def scrap(self,response):
         soup = bs4.BeautifulSoup(response, 'html.parser')
         #print(self.outer_element.get())
         elements = self.outer_element.find_all(soup)
 
-        print("Found {} products".format(len(elements)))
+        #print("Found {} products".format(len(elements)))
         
         products = []
         skipped = 0
@@ -93,10 +106,10 @@ class Scrapper:
                 products.append(retrieved_item)
             
         
-        print(f'Skipped {skipped}/{len(elements)} elements')
+        #print(f'Parsed {len(products)} elements')
         return pd.DataFrame(products,columns=self.headers)
     
-    def get_page(self,url,includeChromium=True,add_scroll=True):
+    def get_page(self,url,includeChromium=True,scroller=None):
         response = None
         driver = None
 
@@ -104,7 +117,7 @@ class Scrapper:
             chrome_options = Options()
             ua = UserAgent()
             userAgent = ua.random
-            print(userAgent)
+            #print(userAgent)
             chrome_options.add_argument(f'--user-agent={userAgent}')
             chrome_options.add_argument("--disable-web-security")
             chrome_options.add_argument("--user-data-dir=~/chromeTemp")
@@ -112,16 +125,16 @@ class Scrapper:
             driver.get(url)
             
             #print(f"Height of windows {height}")
-            if add_scroll:
-                self.scroll(driver,5,wait=1)
+            if scroller != None:
+                self.scroll(driver,scroller[0],wait=scroller[1])
                 print("Scroll finished")
             else:
-                time.sleep(20)
+                time.sleep(10)
 
             response = driver.page_source.encode('utf-8').strip()
 
         else:
-            response = requests.get(self.endpoint).text
+            response = requests.get(url).text
 
         return response
 
